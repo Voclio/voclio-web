@@ -1,5 +1,4 @@
-import { requireAuth } from '@/lib/auth';
-import { getLogs } from '@/services/logs';
+import { mockLogs, paginateMockData } from '@/lib/mock-data';
 import LogsClient from './LogsClient';
 
 interface PageProps {
@@ -13,31 +12,27 @@ interface PageProps {
 }
 
 export default async function LogsPage({ searchParams }: PageProps) {
-  const token = await requireAuth();
   const params = await searchParams;
 
   const page = parseInt(params.page || '1', 10);
 
-  let logsData = null;
-  let error = null;
-
-  try {
-    logsData = await getLogs(token, {
-      page,
-      limit: 20,
-      activity_type: params.activity_type,
-      severity: params.severity,
-      start_date: params.start_date,
-      end_date: params.end_date,
-    });
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load logs';
+  // Filter mock data
+  let filteredLogs = [...mockLogs];
+  
+  if (params.activity_type) {
+    filteredLogs = filteredLogs.filter(l => l.activity_type === params.activity_type);
   }
+  
+  if (params.severity) {
+    filteredLogs = filteredLogs.filter(l => l.severity === params.severity);
+  }
+
+  const logsData = paginateMockData(filteredLogs, page, 20);
 
   return (
     <LogsClient
       initialData={logsData}
-      initialError={error}
+      initialError={null}
       initialFilters={{
         page,
         activity_type: params.activity_type || '',

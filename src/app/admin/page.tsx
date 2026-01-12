@@ -1,28 +1,13 @@
-import { requireAuth } from '@/lib/auth';
-import { getApiUsage } from '@/services/api-usage';
-import { getUsers } from '@/services/users';
-import { getLogs } from '@/services/logs';
+import { mockApiUsage, mockUsers, mockLogs, paginateMockData } from '@/lib/mock-data';
 import Card, { CardTitle, StatCard } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 
-export default async function DashboardPage() {
-  const token = await requireAuth();
-
-  let apiUsage = null;
-  let usersData = null;
-  let logsData = null;
-
-  try {
-    [apiUsage, usersData, logsData] = await Promise.all([
-      getApiUsage(token).catch(() => null),
-      getUsers(token, { limit: 5 }).catch(() => null),
-      getLogs(token, { limit: 5 }).catch(() => null),
-    ]);
-  } catch {
-    // Handle errors gracefully
-  }
+export default function DashboardPage() {
+  const apiUsage = mockApiUsage;
+  const usersData = paginateMockData(mockUsers, 1, 5);
+  const logsData = paginateMockData(mockLogs, 1, 5);
 
   return (
     <div className="space-y-6">
@@ -52,7 +37,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Requests"
-          value={apiUsage?.total_requests?.toLocaleString() ?? '45,230'}
+          value={apiUsage.total_requests.toLocaleString()}
           change="+12.5% from last month"
           changeType="positive"
           icon={<RequestsIcon className="w-6 h-6" />}
@@ -60,7 +45,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Success Rate"
-          value={apiUsage?.success_rate ? `${apiUsage.success_rate.toFixed(1)}%` : '97.2%'}
+          value={`${apiUsage.success_rate.toFixed(1)}%`}
           change="+2.1% from last month"
           changeType="positive"
           icon={<SuccessIcon className="w-6 h-6" />}
@@ -68,7 +53,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Total Users"
-          value={usersData?.total?.toLocaleString() ?? '1,234'}
+          value={usersData.total.toLocaleString()}
           change="+8.3% from last month"
           changeType="positive"
           icon={<UsersIcon className="w-6 h-6" />}
@@ -76,7 +61,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Total Errors"
-          value={apiUsage?.total_errors?.toLocaleString() ?? '1,250'}
+          value={apiUsage.total_errors.toLocaleString()}
           change="-5.2% from last month"
           changeType="positive"
           icon={<ErrorsIcon className="w-6 h-6" />}
@@ -145,30 +130,26 @@ export default async function DashboardPage() {
               View all →
             </Link>
           </div>
-          {usersData?.data?.length ? (
-            <div className="space-y-3">
-              {usersData.data.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-purple-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
+          <div className="space-y-3">
+            {usersData.data.map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-purple-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                   </div>
-                  <Badge variant={user.is_active ? 'success' : 'error'} dot>
-                    {user.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">No users found</p>
-          )}
+                <Badge variant={user.is_active ? 'success' : 'error'} dot>
+                  {user.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+            ))}
+          </div>
         </Card>
 
         {/* Recent Logs */}
@@ -179,26 +160,22 @@ export default async function DashboardPage() {
               View all →
             </Link>
           </div>
-          {logsData?.data?.length ? (
-            <div className="space-y-3">
-              {logsData.data.map((log) => (
-                <div key={log.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors">
-                  <SeverityIcon severity={log.severity} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 truncate">{log.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(log.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <Badge variant={getSeverityVariant(log.severity)} size="sm">
-                    {log.severity}
-                  </Badge>
+          <div className="space-y-3">
+            {logsData.data.map((log) => (
+              <div key={log.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors">
+                <SeverityIcon severity={log.severity} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-900 truncate">{log.message}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(log.created_at).toLocaleString()}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">No recent activity</p>
-          )}
+                <Badge variant={getSeverityVariant(log.severity)} size="sm">
+                  {log.severity}
+                </Badge>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
     </div>

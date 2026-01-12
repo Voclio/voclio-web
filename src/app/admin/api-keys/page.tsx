@@ -1,5 +1,4 @@
-import { requireAuth } from '@/lib/auth';
-import { getApiKeys } from '@/services/api-keys';
+import { mockApiKeys, paginateMockData } from '@/lib/mock-data';
 import ApiKeysClient from './ApiKeysClient';
 
 interface PageProps {
@@ -7,18 +6,10 @@ interface PageProps {
 }
 
 export default async function ApiKeysPage({ searchParams }: PageProps) {
-  const token = await requireAuth();
   const params = await searchParams;
   const page = parseInt(params.page || '1', 10);
 
-  let keysData = null;
-  let error = null;
+  const keysData = paginateMockData(mockApiKeys, page, 10);
 
-  try {
-    keysData = await getApiKeys(token, { page, limit: 10 });
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load API keys';
-  }
-
-  return <ApiKeysClient initialData={keysData} initialError={error} currentPage={page} />;
+  return <ApiKeysClient initialData={keysData} initialError={null} currentPage={page} />;
 }

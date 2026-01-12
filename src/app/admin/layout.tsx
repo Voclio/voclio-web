@@ -1,10 +1,7 @@
-import { requireAuth } from '@/lib/auth';
 import AdminShell from '@/components/layout/AdminShell';
 import { ToastProvider } from '@/components/ui/Toast';
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAuth();
-
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
       <AdminShell>{children}</AdminShell>
