@@ -80,18 +80,28 @@ export default function DashboardPage() {
               <option>Last 90 days</option>
             </select>
           </div>
-          <div className="h-64 flex items-end justify-between gap-2 px-4">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
-              const heights = [65, 80, 45, 90, 70, 55, 85];
+          <div className="h-64 flex items-end justify-between gap-3 px-4">
+            {[
+              { day: 'Mon', value: 6500, requests: '6.5K' },
+              { day: 'Tue', value: 8000, requests: '8K' },
+              { day: 'Wed', value: 4500, requests: '4.5K' },
+              { day: 'Thu', value: 9000, requests: '9K' },
+              { day: 'Fri', value: 7000, requests: '7K' },
+              { day: 'Sat', value: 5500, requests: '5.5K' },
+              { day: 'Sun', value: 8500, requests: '8.5K' },
+            ].map((item) => {
+              const maxValue = 10000;
+              const heightPercent = (item.value / maxValue) * 100;
               return (
-                <div key={day} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full bg-gray-100 rounded-t-lg relative overflow-hidden" style={{ height: `${heights[i]}%` }}>
+                <div key={item.day} className="flex-1 flex flex-col items-center gap-2">
+                  <span className="text-xs font-medium text-gray-600">{item.requests}</span>
+                  <div className="w-full h-48 bg-gray-100 rounded-lg relative overflow-hidden flex items-end">
                     <div 
-                      className="absolute bottom-0 w-full bg-gradient-to-t from-[#6D28D9] to-[#8B5CF6] rounded-t-lg transition-all duration-500"
-                      style={{ height: '100%' }}
+                      className="w-full bg-gradient-to-t from-[#6D28D9] to-[#8B5CF6] rounded-lg transition-all duration-500"
+                      style={{ height: `${heightPercent}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500">{day}</span>
+                  <span className="text-xs text-gray-500">{item.day}</span>
                 </div>
               );
             })}
